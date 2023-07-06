@@ -2,10 +2,10 @@ import { useState} from "react";
 import PropTypes from "prop-types";
 import { Form, Label, Input, Button } from "./ContactForm.styled";
 
-export const ContactForm = ({ addContact }) => {
+export const ContactForm = ({ onSubmit }) => {
     
-    const[name, setName] = useState('');
-    const[number, setNumber] = useState('');
+    const [name, setName] = useState('');
+    const [number, setNumber] = useState('');
 
     const userInfo = {
         name,
@@ -19,18 +19,18 @@ export const ContactForm = ({ addContact }) => {
             return;
         }
         setNumber(value);
-    }
+    };
 
     const resetForm = () => {
         setName('');
         setNumber('');
-    }
+    };
 
     const onFormSubmit = (e) => {
-    e.preventDefault();
-    addContact(userInfo);
-    resetForm();
-    }
+        e.preventDefault();
+        onSubmit(userInfo);
+        resetForm();
+    };
     
     return (
         <Form onSubmit={onFormSubmit}>
@@ -62,5 +62,5 @@ export const ContactForm = ({ addContact }) => {
 };
 
 ContactForm.propTypes = {
-    addContact: PropTypes.func.isRequired
+    onSubmit: PropTypes.func.isRequired
 };

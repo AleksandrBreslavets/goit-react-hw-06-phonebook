@@ -1,60 +1,47 @@
-import { nanoid } from "nanoid";
 import toast, { Toaster } from 'react-hot-toast';
-import { useState, useEffect } from "react";
 import { ContactForm } from "./ContactForm/ContactForm";
 import { Filter } from "./Filter/Filter";
 import { ContactList } from "./ContactList/ContactList";
 import { MainTitle, SectionTitle } from "./App.styled";
-
-const LS_KEY = 'contacts';
+import { useDispatch, useSelector } from "react-redux";
+import { getContacts, getFilterValue } from "redux/selectors";
+import { addContact, deleteConatct } from "redux/contactsSlice";
+import { setFilterValue } from "redux/filterSlice";
 
 export const App = () => {
 
-  const [contacts, setContacts] = useState(() => {
-    const savedContacts = localStorage.getItem(LS_KEY);
-    return savedContacts !== null ? JSON.parse(savedContacts) : [];
-  });
-  const [filter, setFilter] = useState('');
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilterValue);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify(contacts))
-  }, [contacts]);
-  
-  const addContact = ({ name, number }) => {
+  const onSubmit = ({ name, number }) => {
     if (contacts.findIndex(contact => name === contact.name) === -1) {
-      const newContact = {
-        name,
-        number,
-        id: nanoid(),
-      };
-      setContacts(prevContacts => [...prevContacts, newContact]);
+      dispatch(addContact({ name, number }));
+      return;
     }
-    else {
-      toast.error(`${name} is already in contacts`);
-    }
+    toast.error(`${name} is already in contacts`);
   };
 
-  const onFilterChange = (e) => {
-    setFilter(e.target.value)
+  const onFilterChange = e => {
+    dispatch(setFilterValue(e.target.value));
   };
 
   const filterContacts = () => {
-    return contacts.filter(({ name }) => name.toLowerCase().includes(filter.toLowerCase()));
+    return contacts.filter(({ name }) => name.toLowerCase().includes(filter.trim().toLowerCase()));
   };
 
-  const deleteContact = id => {
-    setContacts(prevContacts => (prevContacts.filter(contact => contact.id !== id)))
+  const onDeleteBtnClick = id => {
+    dispatch(deleteConatct(id));
   };
 
-  return <>
+  return <div>
     <MainTitle>Phonebook</MainTitle>
-    <ContactForm addContact={addContact} />
+    <ContactForm onSubmit={onSubmit} />
     <SectionTitle>Contacts</SectionTitle>
     <Filter onFilterChange={onFilterChange} value={filter} />
-    {filterContacts().length ? <ContactList contacts={filterContacts()} onDeleteBtnClick={deleteContact} /> : null}
+    {filterContacts().length ? <ContactList contacts={filterContacts()} onDeleteBtnClick={onDeleteBtnClick} /> : null}
     <Toaster
       position="top-right"
       toastOptions={{ duration: 2000 }} />
-  </>
-    
+  </div>   
 };
